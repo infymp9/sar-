@@ -1,1 +1,99 @@
+The `sar` command in Linux is part of the **sysstat** package and is used for collecting, reporting, and saving system activity information. It’s commonly used to monitor CPU, memory, I/O, and other system metrics. When you specifically want to monitor CPU usage, the `sar` command provides detailed information about how your CPU is performing over time.
 
+### Install `sar` (if not already installed):
+
+Before using `sar`, ensure that the **sysstat** package is installed. If not, you can install it using:
+
+For **RHEL/CentOS**:
+```bash
+sudo yum install sysstat
+```
+
+For **Ubuntu/Debian**:
+```bash
+sudo apt-get install sysstat
+```
+
+After installation, enable data collection by editing the `/etc/default/sysstat` file (in Debian-based systems) or `/etc/sysstat/sysstat` file (in Red Hat-based systems). Set `ENABLED` to `true`, then restart the service:
+
+```bash
+sudo systemctl restart sysstat
+```
+
+### Basic `sar` command to monitor CPU usage:
+
+```bash
+sar -u 1 5
+```
+
+**Explanation**:
+- `-u`: This option displays CPU usage.
+- `1`: The interval in seconds between two consecutive reports. In this case, it reports every second.
+- `5`: The number of times the report will be displayed (in this case, 5 times).
+
+### Understanding the output:
+
+The typical output of the `sar -u` command looks like this:
+
+```bash
+12:00:01 AM CPU  %user  %nice  %system  %iowait  %steal  %idle
+12:00:02 AM all   10.25  0.00    3.25     0.00    0.00   86.50
+12:00:03 AM all    9.50  0.00    2.50     0.00    0.00   88.00
+12:00:04 AM all    8.75  0.00    2.25     0.00    0.00   89.00
+12:00:05 AM all   10.00  0.00    2.75     0.00    0.00   87.25
+Average:       all    9.63  0.00    2.69     0.00    0.00   87.68
+```
+
+Here's a breakdown of the columns:
+
+1. **%user**: The percentage of CPU utilization that occurred while executing user processes. This reflects the time CPU spends on tasks like running applications.
+   
+2. **%nice**: The percentage of CPU utilization that occurred while executing user processes with a "nice" priority. A "nice" process runs with lower priority.
+
+3. **%system**: The percentage of CPU utilization that occurred while executing system (kernel) processes. This shows how much of the CPU's time is being taken by the kernel, such as I/O operations, system calls, etc.
+
+4. **%iowait**: The percentage of time the CPU is idle, but waiting for I/O operations (such as reading from disk or network). High `%iowait` indicates a slow I/O subsystem or disk bottleneck.
+
+5. **%steal**: This is specific to virtualized environments. It shows the percentage of time the virtual CPU waits for the real CPU while the hypervisor is servicing another virtual processor.
+
+6. **%idle**: The percentage of time the CPU is idle and not doing anything. If this value is high, it means the system isn't doing much work.
+
+### Example Breakdown:
+
+- In the example above, the CPU is mostly idle (`%idle` around 87-89%), which means the system isn't under heavy load.
+- `%user` ranges between 8.75% and 10.25%, which indicates how much time the CPU spends on user-level tasks (like running programs).
+- `%system` is around 2-3%, meaning the kernel is not heavily loaded.
+- `%iowait` is 0%, indicating no disk I/O bottlenecks.
+  
+### More Detailed Options:
+
+1. **CPU-specific details**:
+   To display CPU usage per CPU/core, you can use the `-P` flag:
+   ```bash
+   sar -P ALL 1 5
+   ```
+   This will show CPU usage for each core individually instead of combined.
+
+2. **Historical Data**:
+   `sar` also stores system activity logs, and you can use the following command to view historical CPU usage (like for the current day):
+   ```bash
+   sar -u -f /var/log/sa/saXX
+   ```
+   Replace `XX` with the day's number (e.g., 02 for the second day of the month).
+
+3. **Long-Term Monitoring**:
+   You can use `sar` for long-term monitoring by collecting data over hours or days and analyzing it. For instance, to collect CPU data every minute, you can use:
+   ```bash
+   sar -u 60 10
+   ```
+   This collects CPU usage every 60 seconds, 10 times in total.
+
+### Summary of Key Metrics:
+- **%user**: How much time the CPU spends on user-level tasks.
+- **%nice**: CPU time spent on "nice" user-level tasks.
+- **%system**: CPU time spent handling system tasks (kernel-level).
+- **%iowait**: Idle time spent waiting for I/O operations.
+- **%steal**: CPU wait time due to virtual machine contention.
+- **%idle**: Idle CPU time (the higher, the less busy the system is).
+
+This approach gives you a clear understanding of CPU usage, helping you diagnose performance issues or understand overall CPU health.
